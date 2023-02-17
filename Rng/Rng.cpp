@@ -38,6 +38,20 @@ void generate(std::string outputFile)
     file.close();
 }
 
+void generateFromGenerator(std::string outputFile, SupportedGenerators generator, size_t size) // add seed
+{
+    std::ofstream file(outputFile, std::ios::out | std::ios::binary);
+
+    auto data = getRandomBlockFromGenerator(generator, size);
+    //for (size_t i = 0; i < kLength; ++i)
+    //    file << static_cast<char>(rand() % 0x100);
+
+    for (auto byte : data)
+        file << static_cast<char>(byte);
+
+    file.close();
+}
+
 void readBatch(std::string inputFile, size_t position, std::vector<uint8_t>& batch)
 {
     batch.resize(kBatchLength);
@@ -54,7 +68,6 @@ void analysisTest(std::vector<uint8_t>& batch, std::map<std::string, size_t, Com
     for (size_t i = 0; i < batch.size(); ++i)
         str += std::bitset<8>(batch[i]).to_string();
 
-    //const std::string pattern = "0101";
     size_t position = -1 * pattern.length();
     size_t newPosition;
     std::string key;
@@ -71,6 +84,7 @@ void analysisTest(std::vector<uint8_t>& batch, std::map<std::string, size_t, Com
         }
         else
         {
+            size_t count = newPosition - position - pattern.length();
             key = str.substr(position + pattern.length(), newPosition - position - pattern.length());
         }
 
@@ -99,23 +113,6 @@ void writeResult(std::string outputFile, std::map<std::string, size_t, CompType>
     file.close();
 }
 
-//void cryptoPPTest()
-//{
-//    using namespace CryptoPP;
-//
-//    const unsigned int BLOCKSIZE = 1024;
-//    SecByteBlock scratch(BLOCKSIZE);
-//
-//    CryptoPP::AutoSeededX917RNG<CryptoPP::DES_EDE3> rng(false, false);
-//    SecByteBlock seed(32);
-//
-//    OS_GenerateRandomBlock(false, seed, seed.size()); // It's entropy
-//    rng.IncorporateEntropy(seed, seed.size());
-//
-//    rng.GenerateBlock(scratch, scratch.size());
-//    scratch.BytePtr();
-//}
-
 template <size_t length>
 void launchAnalysisTestAllSets()
 {
@@ -138,21 +135,84 @@ void launchAnalysisTestAllSets()
     }
 }
 
+template <size_t length>
+void launchAnalysisTestAllSetsAuto(std::string inputFileName, std::string outputFileName)
+{
+    using result_type = std::map<std::string, size_t, CompType>;
+    size_t count = pow(2, length);
+
+    std::vector<uint8_t> batch;
+    std::vector<result_type> allResults;
+    for (size_t j = 0; j < count; ++j)
+    {
+        result_type result(comparator);
+
+        const std::string pattern = std::bitset<length>(j).to_string();
+
+        std::string str;
+        for (size_t i = 0; i < kLength / kBatchLength; ++i)
+        {
+            readBatch(inputFileName, i * kBatchLength, batch);
+            analysisTest(batch, result, pattern, str);
+        }
+
+        auto begin = result.begin();
+        auto end = result.begin();
+        std::advance(end, result.size() > 200 ? 200 : result.size());
+        allResults.push_back(result_type(begin, end, comparator));
+    }
+
+    std::vector<result_type::iterator> iterators;
+    std::vector<result_type::iterator> endIterators;
+    iterators.reserve(allResults.size());
+    for (auto& res : allResults)
+    {
+        iterators.emplace_back(res.begin());
+        endIterators.emplace_back(res.end());
+    }
+
+    std::ofstream file(outputFileName, std::ios::app);
+    for (size_t i = 0; i < 200; ++i) // what with 200?
+    {
+        for (size_t i = 0; i < iterators.size(); ++i)
+        {
+            auto& iter = iterators[i];
+            if (iter == endIterators[i])
+                continue;
+
+            file << "'" << (*iter).first << "'" << "," << (*iter).second << ",";
+            ++iter;
+        }
+
+        file << std::endl;
+    }
+    file.close();
+}
+
 void getAllLevenshteinTestsResult()
 {
     std::vector<SupportedGenerators> generators = { SupportedGenerators::SystemGenerator,
                                                     SupportedGenerators::X917RNG,
                                                     //SupportedGenerators::MidSquare,
-                                                    SupportedGenerators::AESRNG };
+                                                    SupportedGenerators::AESRNG,
+                                                    /*SupportedGenerators::MersenneTwister,
+                                                    SupportedGenerators::Linear,
+                                                    SupportedGenerators::Knuthan,
+                                                    SupportedGenerators::LFSRSimple*/ };
 
     for (auto generator : generators)
     {
-        auto seq1 = getRandomBlockFromGenerator(generator, 2048);
-        auto seq2 = getRandomBlockFromGenerator(generator, 2048);
+        for (size_t i = 0; i < 25; ++i)
+        {
+            auto seq1 = getRandomBlockFromGenerator(generator, 2048);
+            auto seq2 = getRandomBlockFromGenerator(generator, 2048);
 
-        std::cout << "generator " << static_cast<int>(generator) << " test 1: " << levenshteinTest1(seq1, seq2) << std::endl;
-        std::cout << "generator " << static_cast<int>(generator) << " test 2: " << levenshteinTest2(seq1, seq2) << std::endl;
+            std::cout << "generator " << static_cast<int>(generator) << " test 1: " << levenshteinTest1(seq1, seq2) << std::endl;
+            std::cout << "generator " << static_cast<int>(generator) << " test 2: " << levenshteinTest2(seq1, seq2) << std::endl;
+        }
     }
+
+[    return;
 }
 
 int main()
@@ -186,6 +246,30 @@ int main()
         getAllLevenshteinTestsResult();
 
     //generate("10mb/output.bin");
+
+    /*for (size_t j = 7; j <= 10; ++j)
+    {
+        std::string folderNumber = std::to_string(j);
+        //std::vector<std::string> inputFileNames = { /*"1/inputSystem.bin", folderNumber + "/inputLFSRSimple.bin", folderNumber + "/inputKnuthan.bin"/*, folderNumber + "/inputAESRNG.bin", folderNumber + "/inputMersenne.bin"*/// };
+        //std::vector<std::string> outpuFileNames = { /*"1/outputSystem.csv",*/ folderNumber + "/outputLFSRSimple.csv", folderNumber + "/outputKnuthan.csv"/*, folderNumber + "/outputAESRNG.csv", folderNumber + "/outputMersenne.csv"*/ };
+        //std::vector<SupportedGenerators> generators = { /*SupportedGenerators::SystemGenerator,*/ SupportedGenerators::Linear,
+        //                                                /*SupportedGenerators::X917RNG,*/ /*SupportedGenerators::AESRNG,*/ /*SupportedGenerators::MersenneTwister*/ };
+        //std::vector<SupportedGenerators> generators = { SupportedGenerators::Knuthan, SupportedGenerators::LFSRSimple };
+        //std::vector<std::string> inputFileNames = { "inputKnuthan.bin", "inputLFSRSimple.bin" };
+        //for (size_t i = 0; i < inputFileNames.size(); ++i)
+        //{
+        //    generateFromGenerator(inputFileNames[i], generators[i], kLength);
+        //}
+
+        /*for (size_t i = 0; i < inputFileNames.size(); ++i)
+        {
+            launchAnalysisTestAllSetsAuto<3>(inputFileNames[i], outpuFileNames[i]);
+        }
+    }*/
+
+    //launchAnalysisTestAllSetsAuto<3>("1/inputLinear.bin", "1/outputLinearTest.csv");
+
+    //auto result = getRandomBlockFromGenerator(SupportedGenerators::LFSRSimple, 1024);
 
     return 0;
 }
