@@ -38,11 +38,11 @@ void generate(std::string outputFile)
     file.close();
 }
 
-void generateFromGenerator(std::string outputFile, SupportedGenerators generator, size_t size) // add seed
+void generateFromGenerator(std::string outputFile, SupportedGenerators generator, size_t size, uint64_t seed)
 {
     std::ofstream file(outputFile, std::ios::out | std::ios::binary);
 
-    auto data = getRandomBlockFromGenerator(generator, size);
+    auto data = getRandomBlockFromGenerator(generator, size, seed);
     //for (size_t i = 0; i < kLength; ++i)
     //    file << static_cast<char>(rand() % 0x100);
 
@@ -193,19 +193,18 @@ void getAllLevenshteinTestsResult()
 {
     std::vector<SupportedGenerators> generators = { SupportedGenerators::SystemGenerator,
                                                     SupportedGenerators::X917RNG,
-                                                    //SupportedGenerators::MidSquare,
                                                     SupportedGenerators::AESRNG,
-                                                    /*SupportedGenerators::MersenneTwister,
+                                                    SupportedGenerators::MersenneTwister,
                                                     SupportedGenerators::Linear,
                                                     SupportedGenerators::Knuthan,
-                                                    SupportedGenerators::LFSRSimple*/ };
+                                                    SupportedGenerators::LFSRSimple };
 
     for (auto generator : generators)
     {
         for (size_t i = 0; i < 25; ++i)
         {
-            auto seq1 = getRandomBlockFromGenerator(generator, 2048);
-            auto seq2 = getRandomBlockFromGenerator(generator, 2048);
+            auto seq1 = getRandomBlockFromGenerator(generator, 2048, 1234); // replace seed
+            auto seq2 = getRandomBlockFromGenerator(generator, 2048, 1234);
 
             std::cout << "generator " << static_cast<int>(generator) << " test 1: " << levenshteinTest1(seq1, seq2) << std::endl;
             std::cout << "generator " << static_cast<int>(generator) << " test 2: " << levenshteinTest2(seq1, seq2) << std::endl;

@@ -10,39 +10,37 @@
 
 namespace
 {
-std::vector<uint8_t> generateRandRNG(size_t size)
+std::vector<uint8_t> generateRandRNG(size_t size, uint64_t seed)
 {
-    std::vector<uint8_t> block;
-    block.reserve(size);
+    std::vector<uint8_t> block(size, 0);
+    srand(seed);
 
     for (size_t i = 0; i < size; ++i)
-        block.push_back(rand() % 0x100);
+        block[i] = rand() % 0x100;
 
     return block;
 }
 
-std::vector<uint8_t> generateLinear(size_t size)
+std::vector<uint8_t> generateLinear(size_t size, uint64_t seed)
 {
-    std::vector<uint8_t> block;
-    block.reserve(size);
+    std::vector<uint8_t> block(size, 0);
 
     const uint64_t a = 6364136223846793005;
     const uint64_t b = 1442695040888963407;
-    const uint64_t m = 0x8000000000000000;// (1 << 62);
-    uint64_t x = 0x54326457245; // seed
+    const uint64_t m = 0x8000000000000000;
 
     for (size_t i = 0; i < size / 8; ++i)
     {
-        x = (a * x + b) % m;
+        seed = (a * seed + b) % m;
 
-        block.emplace_back((x & 0xFF00000000000000) >> 52);
-        block.emplace_back((x & 0x00FF000000000000) >> 48);
-        block.emplace_back((x & 0x0000FF0000000000) >> 40);
-        block.emplace_back((x & 0x000000FF00000000) >> 32);
-        block.emplace_back((x & 0x00000000FF000000) >> 24);
-        block.emplace_back((x & 0x0000000000FF0000) >> 16);
-        block.emplace_back((x & 0x000000000000FF00) >> 8);
-        block.emplace_back(x &  0x00000000000000FF);
+        block.emplace_back((seed & 0xFF00000000000000) >> 52);
+        block.emplace_back((seed & 0x00FF000000000000) >> 48);
+        block.emplace_back((seed & 0x0000FF0000000000) >> 40);
+        block.emplace_back((seed & 0x000000FF00000000) >> 32);
+        block.emplace_back((seed & 0x00000000FF000000) >> 24);
+        block.emplace_back((seed & 0x0000000000FF0000) >> 16);
+        block.emplace_back((seed & 0x000000000000FF00) >> 8);
+        block.emplace_back(seed &  0x00000000000000FF);
     }
 
     return block;
@@ -57,7 +55,8 @@ std::vector<uint8_t> generateX917RNG(size_t size)
 
     SecByteBlock scratch(size);
 
-    SecByteBlock key(AES::DEFAULT_KEYLENGTH), seed(AES::BLOCKSIZE);
+    SecByteBlock key(AES::DEFAULT_KEYLENGTH);
+    SecByteBlock seed(AES::BLOCKSIZE);
     OS_GenerateRandomBlock(false, key, key.size());
     OS_GenerateRandomBlock(false, seed, seed.size());
     X917RNG rng(new AES::Encryption(key, AES::DEFAULT_KEYLENGTH), seed, NULLPTR);
@@ -73,12 +72,10 @@ std::vector<uint8_t> generateX917RNG(size_t size)
     return block;
 }
 
-std::vector<uint8_t> generateMidSquareRNG(size_t size)
+std::vector<uint8_t> generateMidSquareRNG(size_t size, uint64_t seed)
 {
     std::vector<uint8_t> block;
     block.reserve(size);
-
-    uint32_t seed = rand();// 0xA3A80;
 
     for (size_t i = 0; i < size / 2; ++i)
     {
@@ -97,8 +94,10 @@ std::vector<uint8_t> generateAESRNG(size_t size)
 
     using namespace CryptoPP;
 
+    SecByteBlock seedByteBlock(32);
     SecByteBlock seed(32);
     OS_GenerateRandomBlock(false, seed, seed.size());
+    seedByteBlock = seed;
 
     std::ofstream seedFile("AESRNGseed.bin", std::ios::out | std::ios::binary);
     for (auto byte : seed)
@@ -111,11 +110,11 @@ std::vector<uint8_t> generateAESRNG(size_t size)
     return block;
 }
 
-std::vector<uint8_t> generateMersenneTwister(size_t size)
+std::vector<uint8_t> generateMersenneTwister(size_t size, uint64_t seed)
 {
     std::vector<uint8_t> block;
     std::mt19937_64 gen64;
-    gen64.seed(348336Ui64);
+    gen64.seed(seed);
 
     uint64_t value;
     for (size_t i = 0; i < size / 8; ++i)
@@ -134,14 +133,13 @@ std::vector<uint8_t> generateMersenneTwister(size_t size)
     return block;
 }
 
-std::vector<uint8_t> generateKnuthanRNG(size_t size)
+std::vector<uint8_t> generateKnuthanRNG(size_t size, uint64_t seed)
 {
     std::vector<uint8_t> block;
     const uint32_t a1 = 271828183;
     const uint32_t a2 = 314159269;
     const uint32_t m = 0xFFFFFFFF;
 
-    const uint64_t seed = 0x345987234098a;
     const uint32_t x0 = (seed & 0xFFFFFFFF00000000) >> 32;
     const uint32_t x1 = seed & 0xFFFFFFFF;
 
@@ -173,9 +171,9 @@ std::vector<uint8_t> generateKnuthanRNG(size_t size)
     return block;
 }
 
-std::vector<uint8_t> generateLFSRSimple(size_t size)
+std::vector<uint8_t> generateLFSRSimple(size_t size, uint64_t seed)
 {
-    uint32_t shiftRegister = 0x345987234098a; // seed
+    uint32_t shiftRegister = static_cast<uint32_t>(seed & 0xFFFFFFFF);
     std::vector<uint8_t> block;
 
     for (size_t i = 0; i < size / 4; ++i)
@@ -218,31 +216,28 @@ std::vector<uint8_t> generateLFSRSimple(size_t size)
 
     return block;
 }
-}
+} // namespace
 
-std::vector<uint8_t> getRandomBlockFromGenerator(SupportedGenerators generator, size_t size)
+std::vector<uint8_t> getRandomBlockFromGenerator(SupportedGenerators generator, size_t size, uint64_t seed)
 {
-    if (generator == SupportedGenerators::X917RNG)
-        return generateX917RNG(size);
-
     switch (generator)
     {
     case SupportedGenerators::SystemGenerator:
-        return generateRandRNG(size);
+        return generateRandRNG(size, seed);
     case SupportedGenerators::Linear:
-        return generateLinear(size);
+        return generateLinear(size, seed);
     case SupportedGenerators::X917RNG:
-        return generateX917RNG(size);
+        return generateX917RNG(size); // seed is unused
     case SupportedGenerators::MidSquare:
-        return generateMidSquareRNG(size);
+        return generateMidSquareRNG(size, seed);
     case SupportedGenerators::AESRNG:
-        return generateAESRNG(size);
+        return generateAESRNG(size); // seed is unused
     case SupportedGenerators::MersenneTwister:
-        return generateMersenneTwister(size);
+        return generateMersenneTwister(size, seed);
     case SupportedGenerators::Knuthan:
-        return generateKnuthanRNG(size);
+        return generateKnuthanRNG(size, seed);
     case SupportedGenerators::LFSRSimple:
-        return generateLFSRSimple(size);
+        return generateLFSRSimple(size, seed);
     }
 
     return {};
