@@ -212,7 +212,7 @@ void getAllLevenshteinTestsResult()
         }
     }
 
-[    return;
+    return;
 }
 
 int main()
