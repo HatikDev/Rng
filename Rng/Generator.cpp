@@ -218,7 +218,7 @@ std::vector<uint8_t> generateLFSRSimple(size_t size, uint64_t seed)
 }
 } // namespace
 
-std::vector<uint8_t> getRandomBlockFromGenerator(SupportedGenerators generator, size_t size, uint64_t seed)
+std::vector<uint8_t> getRandomBlock(SupportedGenerators generator, size_t size, uint64_t seed)
 {
     switch (generator)
     {
@@ -241,4 +241,16 @@ std::vector<uint8_t> getRandomBlockFromGenerator(SupportedGenerators generator, 
     }
 
     return {};
+}
+
+void generateData(std::string outputFile, SupportedGenerators generator, size_t size, uint64_t seed)
+{
+    std::ofstream file(outputFile, std::ios::out | std::ios::binary);
+
+    auto data = getRandomBlock(generator, size, seed);
+
+    for (auto byte : data)
+        file << static_cast<char>(byte);
+
+    file.close();
 }

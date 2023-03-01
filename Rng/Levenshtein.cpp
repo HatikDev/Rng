@@ -1,9 +1,13 @@
+#include "Generator.h"
 #include "Levenshtein.h"
 
 #include <algorithm>
 #include <bitset>
+#include <iostream>
 #include <vector>
 
+namespace
+{
 size_t levenshteinDistance(const std::string& source, const std::string& target)
 {
     if (source.size() > target.size())
@@ -59,4 +63,30 @@ size_t levenshteinTest2(const std::vector<uint8_t>& sequence1, const std::vector
         string2 += (char)byte;
 
     return levenshteinDistance(string1, string2);
+}
+} // namespace
+
+void getAllLevenshteinTestsResult()
+{
+    std::vector<SupportedGenerators> generators = { SupportedGenerators::SystemGenerator,
+                                                    SupportedGenerators::X917RNG,
+                                                    SupportedGenerators::AESRNG,
+                                                    SupportedGenerators::MersenneTwister,
+                                                    SupportedGenerators::Linear,
+                                                    SupportedGenerators::Knuthan,
+                                                    SupportedGenerators::LFSRSimple };
+
+    for (auto generator : generators)
+    {
+        for (size_t i = 0; i < 25; ++i)
+        {
+            auto seq1 = getRandomBlock(generator, 2048, 1234); // replace seed
+            auto seq2 = getRandomBlock(generator, 2048, 1234);
+
+            std::cout << "generator " << static_cast<int>(generator) << " test 1: " << levenshteinTest1(seq1, seq2) << std::endl;
+            std::cout << "generator " << static_cast<int>(generator) << " test 2: " << levenshteinTest2(seq1, seq2) << std::endl;
+        }
+    }
+
+    return;
 }

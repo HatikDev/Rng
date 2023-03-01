@@ -149,12 +149,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Analysis.cpp" />
     <ClCompile Include="Generator.cpp" />
+    <ClCompile Include="IOSystem.cpp" />
     <ClCompile Include="Levenshtein.cpp" />
     <ClCompile Include="Rng.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Analysis.h" />
+    <ClInclude Include="Constants.h" />
     <ClInclude Include="Generator.h" />
+    <ClInclude Include="IOSystem.h" />
     <ClInclude Include="Levenshtein.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
