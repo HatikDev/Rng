@@ -14,11 +14,17 @@
 
 namespace
 {
-auto comparator = [](const std::string& s1, const std::string& s2) { return s1.size() == s2.size() ? (strcmp(s1.c_str(), s2.c_str()) < 0 ? true : false ) : s1.size() < s2.size() ; };
+auto comparator = [](const std::string& s1, const std::string& s2)
+{
+    return s1.size() == s2.size() ?
+            (strcmp(s1.c_str(), s2.c_str()) < 0 ? true : false )
+            : s1.size() < s2.size();
+};
 using CompType = decltype(comparator);
 
 void analysisTest(std::vector<uint8_t>& batch, std::map<std::string, size_t, CompType>& result, const std::string& pattern, std::string& str)
 {
+    str.reserve(str.length() + CHAR_BIT * batch.size());
     for (size_t i = 0; i < batch.size(); ++i)
         str += std::bitset<8>(batch[i]).to_string();
 
