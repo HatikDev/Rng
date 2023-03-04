@@ -18,3 +18,13 @@ enum class SupportedGenerators // we also need rsa rng
 std::vector<uint8_t> getRandomBlock(SupportedGenerators generator, size_t size, uint64_t seed);
 
 void generateData(std::string outputFile, SupportedGenerators generator, size_t size, uint64_t seed);
+
+void generateData(std::string outputFile, SupportedGenerators generator, size_t size, std::vector<uint8_t>& seed);
+
+void generateDataSequences(std::vector<std::string>& outputFiles,
+                           std::vector<SupportedGenerators>& generators,
+                           size_t dataSize, uint64_t initialSeed);
+
+void generateDataSequences(std::vector<std::string>& outputFiles,
+                           std::vector<SupportedGenerators>& generators,
+                           size_t dataSize);

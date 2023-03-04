@@ -46,7 +46,7 @@ std::vector<uint8_t> generateLinear(size_t size, uint64_t seed)
     return block;
 }
 
-std::vector<uint8_t> generateX917RNG(size_t size)
+std::vector<uint8_t> generateX917RNG(size_t size, std::vector<uint8_t>& seed)
 {
     std::vector<uint8_t> block;
     block.reserve(size);
@@ -56,10 +56,8 @@ std::vector<uint8_t> generateX917RNG(size_t size)
     SecByteBlock scratch(size);
 
     SecByteBlock key(AES::DEFAULT_KEYLENGTH);
-    SecByteBlock seed(AES::BLOCKSIZE);
     OS_GenerateRandomBlock(false, key, key.size());
-    OS_GenerateRandomBlock(false, seed, seed.size());
-    X917RNG rng(new AES::Encryption(key, AES::DEFAULT_KEYLENGTH), seed, NULLPTR);
+    X917RNG rng(new AES::Encryption(key, AES::DEFAULT_KEYLENGTH), seed.data(), NULLPTR);
 
     std::ofstream seedFile("X917seed.bin", std::ios::out | std::ios::binary);
     for (auto byte : seed)
@@ -88,16 +86,16 @@ std::vector<uint8_t> generateMidSquareRNG(size_t size, uint64_t seed)
     return block;
 }
 
-std::vector<uint8_t> generateAESRNG(size_t size)
+std::vector<uint8_t> generateAESRNG(size_t size, std::vector<uint8_t>& seed)
 {
     std::vector<uint8_t> block(size, 0);
 
-    using namespace CryptoPP;
+    //using namespace CryptoPP;
 
-    SecByteBlock seedByteBlock(32);
-    SecByteBlock seed(32);
-    OS_GenerateRandomBlock(false, seed, seed.size());
-    seedByteBlock = seed;
+    //SecByteBlock seedByteBlock(32);
+    //SecByteBlock seed(32);
+    //OS_GenerateRandomBlock(false, seed, seed.size());
+    //seedByteBlock = seed;
 
     std::ofstream seedFile("AESRNGseed.bin", std::ios::out | std::ios::binary);
     for (auto byte : seed)
@@ -226,18 +224,31 @@ std::vector<uint8_t> getRandomBlock(SupportedGenerators generator, size_t size, 
         return generateRandRNG(size, seed);
     case SupportedGenerators::Linear:
         return generateLinear(size, seed);
-    case SupportedGenerators::X917RNG:
-        return generateX917RNG(size); // seed is unused
+    //case SupportedGenerators::X917RNG:
+        //return generateX917RNG(size); // seed is unused
     case SupportedGenerators::MidSquare:
         return generateMidSquareRNG(size, seed);
-    case SupportedGenerators::AESRNG:
-        return generateAESRNG(size); // seed is unused
+    //case SupportedGenerators::AESRNG:
+        //return generateAESRNG(size); // seed is unused
     case SupportedGenerators::MersenneTwister:
         return generateMersenneTwister(size, seed);
     case SupportedGenerators::Knuthan:
         return generateKnuthanRNG(size, seed);
     case SupportedGenerators::LFSRSimple:
         return generateLFSRSimple(size, seed);
+    }
+
+    return {};
+}
+
+std::vector<uint8_t> getRandomBlock(SupportedGenerators generator, size_t size, std::vector<uint8_t>& seed)
+{
+    switch (generator)
+    {
+    case SupportedGenerators::X917RNG:
+        return generateX917RNG(size, seed);
+    case SupportedGenerators::AESRNG:
+        return generateAESRNG(size, seed);
     }
 
     return {};
@@ -253,4 +264,69 @@ void generateData(std::string outputFile, SupportedGenerators generator, size_t 
         file << static_cast<char>(byte);
 
     file.close();
+}
+
+void generateData(std::string outputFile, SupportedGenerators generator, size_t size, CryptoPP::SecByteBlock& seed)
+{
+    std::ofstream file(outputFile, std::ios::out | std::ios::binary);
+
+    std::vector<uint8_t> vecSeed;
+    vecSeed.reserve(seed.size());
+    for (auto byte : seed)
+        vecSeed.push_back(byte);
+
+    auto data = getRandomBlock(generator, size, vecSeed);
+
+    for (auto byte : data)
+        file << static_cast<char>(byte);
+
+    file.close();
+}
+
+void logSeed(std::string filename, uint64_t seed)
+{
+    std::ofstream file(filename, std::ios::out);
+    file << seed;
+    file.close();
+}
+
+void logSeed(std::string filename, CryptoPP::SecByteBlock& seed)
+{
+    std::ofstream file(filename, std::ios::out);
+    for (auto byte : seed)
+        file << byte;
+    file.close();
+}
+
+void generateDataSequences(std::vector<std::string>& outputFiles,
+                           std::vector<SupportedGenerators>& generators,
+                           size_t dataSize, uint64_t initialSeed)
+{
+    if (initialSeed)
+        srand(initialSeed);
+
+    for (size_t i = 0; i < outputFiles.size(); ++i)
+    {
+        uint64_t byte = (rand() << 48) + (rand() << 32) + (rand() << 16) + rand();
+        logSeed(outputFiles[i] + "seed", byte);
+        generateData(outputFiles[i], generators[i], dataSize, byte);
+    }
+}
+
+void generateDataSequences(std::vector<std::string>& outputFiles,
+                           std::vector<SupportedGenerators>& generators,
+                           size_t dataSize)
+{
+    //std::vector<uint8_t> seed(32, 0);
+    //CryptoPP::SecByteBlock seed(32, 0);//AES::BLOCKSIZE);
+    CryptoPP::SecByteBlock seed(AES::BLOCKSIZE);
+    //OS_GenerateRandomBlock(false, key, key.size());
+    OS_GenerateRandomBlock(false, seed, seed.size());
+    for (size_t i = 0; i < outputFiles.size(); ++i)
+    {
+        CryptoPP::OS_GenerateRandomBlock(false, seed, seed.size());
+
+        logSeed(outputFiles[i] + "seed", seed);
+        generateData(outputFiles[i], generators[i], dataSize, seed);
+    }
 }

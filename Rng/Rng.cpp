@@ -1,4 +1,5 @@
 ﻿#include <iostream>
+#include <string>
 #include <vector>
 
 #include "Analysis.h"
@@ -6,63 +7,51 @@
 #include "Generator.h"
 #include "Levenshtein.h"
 
-template <size_t length>
-void launchAnalysisTestAllSetsAuto1(const std::string& inputFileName, const std::string& outputFileName)
+void generateDataSequencesGlobal1()
 {
-    using result_type = std::map<std::string, size_t, CompType>;
-    size_t count = pow(2, length);
+    std::vector<SupportedGenerators> generators = { SupportedGenerators::Linear,
+                                                    //SupportedGenerators::X917RNG,
+                                                    //SupportedGenerators::AESRNG,
+                                                    SupportedGenerators::MersenneTwister,
+                                                    SupportedGenerators::Knuthan,
+                                                    SupportedGenerators::LFSRSimple };
+    std::vector<std::string> fileNames;
+    std::vector<std::string> inputGeneratorNames = { "inLinear.bin", "inMersenneTwister.bin", "inKnuthan.bin", "inLFSRSimple.bin", };
+    constexpr size_t kCount = 20;
 
-    std::vector<uint8_t> batch;
-    std::vector<result_type> allResults;
-    for (size_t j = 0; j < count; ++j)
+    for (size_t i = 1; i <= kCount; ++i)
     {
-        result_type result(comparator);
-
-        const std::string pattern = std::bitset<3/*length*/>(j).to_string();
-
-        std::string str;
-        for (size_t i = 0; i < kLength / kBatchLength; ++i)
-        {
-            readBatch(inputFileName, i * kBatchLength, batch);
-            analysisTest(batch, result, pattern, str);
-        }
-
-        auto begin = result.begin();
-        auto end = result.begin();
-        std::advance(end, result.size() > kResultCount ? kResultCount : result.size());
-        allResults.push_back(result_type(begin, end, comparator));
+        auto tempCopy = inputGeneratorNames;
+        for (auto& copy : tempCopy)
+            copy = std::to_string(i) + "/" + copy;
+        generateDataSequences(tempCopy, generators, kLength, rand());
     }
+}
 
-    std::vector<result_type::iterator> iterators;
-    std::vector<result_type::iterator> endIterators;
-    iterators.reserve(allResults.size());
-    endIterators.reserve(allResults.size());
-    for (auto& res : allResults)
+void generateDataSequencesGlobal2()
+{
+    std::vector<SupportedGenerators> generators = { SupportedGenerators::X917RNG,
+                                                    SupportedGenerators::AESRNG,
+    };
+    std::vector<std::string> fileNames;
+    std::vector<std::string> inputGeneratorNames = { "X917RNG.bin", "AESRNG.bin", };
+    constexpr size_t kCount = 20;
+
+    std::vector<uint8_t> seed(32, 0);
+    for (size_t i = 1; i <= kCount; ++i)
     {
-        iterators.emplace_back(res.begin());
-        endIterators.emplace_back(res.end());
+        auto tempCopy = inputGeneratorNames;
+        for (auto& copy : tempCopy)
+            copy = std::to_string(i) + "/" + copy;
+
+        
+        generateDataSequences(tempCopy, generators, kLength);
     }
-
-    std::ofstream file(outputFileName, std::ios::app);
-    for (size_t i = 0; i < kResultCount; ++i)
-    {
-        for (size_t i = 0; i < iterators.size(); ++i)
-        {
-            auto& iter = iterators[i];
-            if (iter == endIterators[i])
-                continue;
-
-            file << "'" << (*iter).first << "'" << "," << (*iter).second << ",";
-            ++iter;
-        }
-
-        file << std::endl;
-    }
-    file.close();
 }
 
 int main()
 {
+    //srand(time(NULL));
     //std::vector<uint8_t> batch;
     //std::map<std::string, size_t, CompType> result(comparator);
 
@@ -86,11 +75,11 @@ int main()
     //for (size_t i = 0; i < 10; ++i)
     //    getAllLevenshteinTestsResult();
 
-    //for (size_t j = 7; j <= 10; ++j)
+    //for (size_t j = 1; j <= 20; ++j)
     //{
     //    std::string folderNumber = std::to_string(j);
     //    std::vector<std::string> inputFileNames = { /*"1/inputSystem.bin", folderNumber + "/inputLFSRSimple.bin", folderNumber + "/inputKnuthan.bin"/*, folderNumber + "/inputAESRNG.bin", folderNumber + "/inputMersenne.bin"*/// };
-    //    std::vector<std::string> outpuFileNames = { /*"1/outputSystem.csv",*/ folderNumber + "/outputLFSRSimple.csv", folderNumber + "/outputKnuthan.csv"/*, folderNumber + "/outputAESRNG.csv", folderNumber + "/outputMersenne.csv"*/ };
+    //    std::vector<std::string> outputFileNames = { /*"1/outputSystem.csv",*/ folderNumber + "/outputLFSRSimple.csv", folderNumber + "/outputKnuthan.csv"/*, folderNumber + "/outputAESRNG.csv", folderNumber + "/outputMersenne.csv"*/ };
     //    std::vector<SupportedGenerators> generators = { /*SupportedGenerators::SystemGenerator,*/ SupportedGenerators::Linear,
     //                                                    /*SupportedGenerators::X917RNG,*/ /*SupportedGenerators::AESRNG,*/ /*SupportedGenerators::MersenneTwister*/ };
     //    std::vector<SupportedGenerators> generators = { SupportedGenerators::Knuthan, SupportedGenerators::LFSRSimple };
@@ -106,9 +95,24 @@ int main()
     //    }*/
     //}
 
-    launchAnalysisTestAllSetsAuto<3>("1/inputLinear.bin", "1/outputLinearTest.csv");
+    //launchAnalysisTestAllSetsAuto<3>("1/inputLinear.bin", "1/outputLinearTest.csv");
 
     //auto result = getRandomBlockFromGenerator(SupportedGenerators::LFSRSimple, 1024);
+
+    //generateDataSequencesGlobal1();
+    generateDataSequencesGlobal2();
+
+    //std::vector<std::string> inputFileNames = { /*"inLinear.bin", */"inMersenneTwister.bin", "inKnuthan.bin", "inLFSRSimple.bin", };
+    //std::vector<std::string> outputFileNames = { /*"outLinear.csv", */"outMersenneTwister.csv", "outKnuthan.csv", "outLFSRSimple.csv", };
+    //for (size_t i = 1; i <= 1; ++i)
+    //{
+    //    for (size_t j = 0; j < inputFileNames.size(); ++j)
+    //    {
+    //        auto inFilename = std::to_string(i) + "/" + inputFileNames[j];
+    //        auto outFilename = std::to_string(i) + "/" + outputFileNames[j];
+    //        launchAnalysisTestAllSetsAuto<3>(inFilename, outFilename);
+    //    }
+    //}
 
     return 0;
 }

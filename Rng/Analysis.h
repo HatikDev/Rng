@@ -97,10 +97,10 @@ void launchAnalysisTestAllSetsAuto(const std::string& inputFileName, const std::
     std::ofstream file(outputFileName, std::ios::app);
     for (size_t i = 0; i < kResultCount; ++i)
     {
-        for (size_t i = 0; i < iterators.size(); ++i)
+        for (size_t j = 0; j < iterators.size(); ++j)
         {
-            auto& iter = iterators[i];
-            if (iter == endIterators[i])
+            auto& iter = iterators[j];
+            if (iter == endIterators[j])
                 continue;
 
             file << "'" << (*iter).first << "'" << "," << (*iter).second << ",";
