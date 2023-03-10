@@ -6,6 +6,10 @@
 #include "Generator.h"
 #include "Levenshtein.h"
 
+#include "Comand.h"
+#include "GenerateComand.h"
+#include "TestComand.h"
+
 template <size_t length>
 void launchAnalysisTestAllSetsAuto1(const std::string& inputFileName, const std::string& outputFileName)
 {
@@ -61,7 +65,33 @@ void launchAnalysisTestAllSetsAuto1(const std::string& inputFileName, const std:
     file.close();
 }
 
-int main()
+std::vector<std::string> getParams(size_t argc, char* argv[], size_t startIndex)
+{
+    if (argc - startIndex <= 0)
+        return {}; // TODO: make exception
+
+    std::vector<std::string> params;
+    params.reserve(argc - startIndex);
+    for (size_t i = startIndex; i < argc; ++i)
+        params.emplace_back(argv[i]);
+
+    return params;
+}
+
+void launchComand(int argc, char* argv[])
+{
+    std::unique_ptr<Comand> comand;
+    if (std::string(argv[1]) == "generate")
+        comand = std::make_unique<GenerateComand>(getParams(argc, argv, 2));
+    else if (std::string(argv[1]) == "test")
+        comand = std::make_unique<TestComand>(getParams(argc, argv, 2));
+    else
+        ; // TODO: add exception
+
+    comand->execute();
+}
+
+int main(int argc, char* argv[])
 {
     //std::vector<uint8_t> batch;
     //std::map<std::string, size_t, CompType> result(comparator);
@@ -106,9 +136,11 @@ int main()
     //    }*/
     //}
 
-    launchAnalysisTestAllSetsAuto<3>("1/inputLinear.bin", "1/outputLinearTest.csv");
+    //launchAnalysisTestAllSetsAuto<3>("1/inputLinear.bin", "1/outputLinearTest.csv");
 
     //auto result = getRandomBlockFromGenerator(SupportedGenerators::LFSRSimple, 1024);
+
+    launchComand(argc, argv);
 
     return 0;
 }

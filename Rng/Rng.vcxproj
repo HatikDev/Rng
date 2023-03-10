@@ -149,17 +149,38 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AESGenerator.cpp" />
+    <ClCompile Include="FileIOSystem.cpp" />
+    <ClCompile Include="GenerateComand.cpp" />
     <ClCompile Include="Generator.cpp" />
     <ClCompile Include="IOSystem.cpp" />
+    <ClCompile Include="KnuthanGenerator.cpp" />
     <ClCompile Include="Levenshtein.cpp" />
+    <ClCompile Include="LFSRGenerator.cpp" />
+    <ClCompile Include="LinearGenerator.cpp" />
+    <ClCompile Include="MersenneTwisterGenerator.cpp" />
     <ClCompile Include="Rng.cpp" />
+    <ClCompile Include="SystemGenerator.cpp" />
+    <ClCompile Include="TestComand.cpp" />
+    <ClCompile Include="X917Generator.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AESGenerator.h" />
     <ClInclude Include="Analysis.h" />
+    <ClInclude Include="Comand.h" />
     <ClInclude Include="Constants.h" />
+    <ClInclude Include="FileIOSystem.h" />
+    <ClInclude Include="GenerateComand.h" />
     <ClInclude Include="Generator.h" />
     <ClInclude Include="IOSystem.h" />
+    <ClInclude Include="KnuthanGenerator.h" />
     <ClInclude Include="Levenshtein.h" />
+    <ClInclude Include="LinearGenerator.h" />
+    <ClInclude Include="LSFRGenerator.h" />
+    <ClInclude Include="MersenneTwisterGenerator.h" />
+    <ClInclude Include="SystemGenerator.h" />
+    <ClInclude Include="TestComand.h" />
+    <ClInclude Include="X917Generator.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
