@@ -150,6 +150,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AESGenerator.cpp" />
+    <ClCompile Include="AnalysisTest.cpp" />
     <ClCompile Include="FileIOSystem.cpp" />
     <ClCompile Include="GenerateComand.cpp" />
     <ClCompile Include="Generator.cpp" />
@@ -167,6 +168,7 @@
   <ItemGroup>
     <ClInclude Include="AESGenerator.h" />
     <ClInclude Include="Analysis.h" />
+    <ClInclude Include="AnalysisTest.h" />
     <ClInclude Include="Comand.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="FileIOSystem.h" />
@@ -179,6 +181,7 @@
     <ClInclude Include="LSFRGenerator.h" />
     <ClInclude Include="MersenneTwisterGenerator.h" />
     <ClInclude Include="SystemGenerator.h" />
+    <ClInclude Include="Test.h" />
     <ClInclude Include="TestComand.h" />
     <ClInclude Include="X917Generator.h" />
   </ItemGroup>

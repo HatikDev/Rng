@@ -135,7 +135,6 @@ std::string GenerateComand::prepareStringFromRegex(std::string regex, size_t iot
                 auto endPos = regex.begin() + index + 2;
                 regex.replace(startPos, endPos, getGeneratorName(generator));
             }
-            //++index;
         }
     }
     return regex;
