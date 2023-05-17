@@ -4,4 +4,4 @@
 #include <string>
 #include <vector>
 
-void getAllLevenshteinTestsResult();
+void getAllLevenshteinTestsResult(const std::string& filename);

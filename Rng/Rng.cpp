@@ -61,6 +61,11 @@ void launchAnalysisTestAllSetsAuto1(const std::string& inputFileName, const std:
     file.close();
 }
 
+uint64_t sysrand()
+{
+    return rand();
+}
+
 int main()
 {
     //std::vector<uint8_t> batch;
@@ -84,29 +89,39 @@ int main()
     //levenshteinTest2(seq1, seq2);
 
     //for (size_t i = 0; i < 10; ++i)
-    //    getAllLevenshteinTestsResult();
+        getAllLevenshteinTestsResult("levenshtein.txt");
 
-    //for (size_t j = 7; j <= 10; ++j)
+    //srand(time(NULL));
+    //for (size_t j = 41; j <= 60; ++j)
     //{
     //    std::string folderNumber = std::to_string(j);
-    //    std::vector<std::string> inputFileNames = { /*"1/inputSystem.bin", folderNumber + "/inputLFSRSimple.bin", folderNumber + "/inputKnuthan.bin"/*, folderNumber + "/inputAESRNG.bin", folderNumber + "/inputMersenne.bin"*/// };
-    //    std::vector<std::string> outpuFileNames = { /*"1/outputSystem.csv",*/ folderNumber + "/outputLFSRSimple.csv", folderNumber + "/outputKnuthan.csv"/*, folderNumber + "/outputAESRNG.csv", folderNumber + "/outputMersenne.csv"*/ };
-    //    std::vector<SupportedGenerators> generators = { /*SupportedGenerators::SystemGenerator,*/ SupportedGenerators::Linear,
-    //                                                    /*SupportedGenerators::X917RNG,*/ /*SupportedGenerators::AESRNG,*/ /*SupportedGenerators::MersenneTwister*/ };
-    //    std::vector<SupportedGenerators> generators = { SupportedGenerators::Knuthan, SupportedGenerators::LFSRSimple };
-    //    std::vector<std::string> inputFileNames = { "inputKnuthan.bin", "inputLFSRSimple.bin" };
+    //    //std::vector<std::string> inputFileNames = { };/*"1/inputSystem.bin", folderNumber + "/inputLFSRSimple.bin", folderNumber + "/inputKnuthan.bin"/*, folderNumber + "/inputAESRNG.bin", folderNumber + "/inputMersenne.bin"*/// };
+    //    std::vector<std::string> outputFileNames = { folderNumber + "/outMersenne.csv", folderNumber + "/outKnuthan.csv", folderNumber + "/LFSR.csv" };
+    //    //std::vector<SupportedGenerators> generators = { /*SupportedGenerators::SystemGenerator,*/ SupportedGenerators::Linear,
+    //                                                    /*SupportedGenerators::X917RNG,*/ /*SupportedGenerators::AESRNG,*/ /*SupportedGenerators::MersenneTwister };*/
+    //    //std::vector<SupportedGenerators> generators = { SupportedGenerators::MersenneTwister, 
+    //    //                                                SupportedGenerators::Knuthan,
+    //    //                                                SupportedGenerators::LFSRSimple,
+    //    //                                                /*SupportedGenerators::X917RNG*/ };
+    //    ////std::vector<std::string> inputFileNames = { "inputMersenneTwister.bin", "inputKnuthan.bin", "inputLFSRSimple.bin" };
+    //    std::vector<std::string> inputFileNames = { folderNumber + "/inMersenne.bin", folderNumber + "/inKnuthan.bin", folderNumber + "/inLFSR.bin",
+    //                                                /*folderNumber + "/inX917.bin"*/ };
+    //    //for (size_t i = 0; i < inputFileNames.size(); ++i)
+    //    //{
+    //    //    uint64_t seed;
+    //    //    seed = (sysrand() << 56) | (sysrand() << 48) | (sysrand() << 40) | (sysrand() << 32) |
+    //    //            (sysrand() << 24) | (sysrand() << 16) | (sysrand() << 8) | sysrand();
+    //    //    generateData(inputFileNames[i], generators[i], kLength, seed);
+    //    //}
+    ////}
+
     //    for (size_t i = 0; i < inputFileNames.size(); ++i)
     //    {
-    //        generateData(inputFileNames[i], generators[i], kLength);
+    //        launchAnalysisTestAllSetsAuto<3>(inputFileNames[i], outputFileNames[i]);
     //    }
-
-    //    /*for (size_t i = 0; i < inputFileNames.size(); ++i)
-    //    {
-    //        launchAnalysisTestAllSetsAuto<3>(inputFileNames[i], outpuFileNames[i]);
-    //    }*/
     //}
 
-    launchAnalysisTestAllSetsAuto<3>("1/inputLinear.bin", "1/outputLinearTest.csv");
+    //launchAnalysisTestAllSetsAuto<3>("1/inputLinear.bin", "1/outputLinearTest.csv");
 
     //auto result = getRandomBlockFromGenerator(SupportedGenerators::LFSRSimple, 1024);
 
