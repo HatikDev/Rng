@@ -1,5 +1,7 @@
 #include "LSFRGenerator.h"
 
+#include <stdexcept>
+
 void LSFRGenerator::generateData(std::vector<uint8_t>& data, size_t size)
 {
     if (!size)
@@ -49,5 +51,9 @@ void LSFRGenerator::generateData(std::vector<uint8_t>& data, size_t size)
 
 void LSFRGenerator::setSeed(const std::vector<uint8_t>& seed)
 {
+    if (seed.size() != 8)
+        throw std::logic_error("Seed size is invalid");
 
+    for (size_t i = 0; i < 8; ++i)
+        m_seed = (m_seed << 8) & seed[i];
 }

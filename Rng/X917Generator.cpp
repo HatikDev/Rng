@@ -17,10 +17,9 @@ void X917Generator::generateData(std::vector<uint8_t>& data, size_t size)
     SecByteBlock scratch(size);
 
     SecByteBlock key(AES::DEFAULT_KEYLENGTH);
-    SecByteBlock seed(AES::BLOCKSIZE);
     OS_GenerateRandomBlock(false, key, key.size());
-    OS_GenerateRandomBlock(false, seed, seed.size()); // TODO: remove generating seed from here
-    X917RNG rng(new AES::Encryption(key, AES::DEFAULT_KEYLENGTH), seed, NULLPTR);
+    OS_GenerateRandomBlock(false, m_seed.data(), m_seed.size()); // TODO: remove generating seed from here
+    X917RNG rng(new AES::Encryption(key, AES::DEFAULT_KEYLENGTH), m_seed.data(), NULLPTR);
 
     rng.GenerateBlock(scratch, scratch.size());
     data.assign(scratch.begin(), scratch.end());
@@ -28,5 +27,8 @@ void X917Generator::generateData(std::vector<uint8_t>& data, size_t size)
 
 void X917Generator::setSeed(const std::vector<uint8_t>& seed)
 {
+    if (seed.size() != 16)
+        throw std::logic_error("Seed size is invalid");
 
+    m_seed = seed;
 }

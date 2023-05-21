@@ -1,5 +1,6 @@
 #include "MersenneTwisterGenerator.h"
 
+#include <stdexcept>
 #include <random>
 
 void MersenneTwisterGenerator::generateData(std::vector<uint8_t>& data, size_t size)
@@ -29,5 +30,9 @@ void MersenneTwisterGenerator::generateData(std::vector<uint8_t>& data, size_t s
 
 void MersenneTwisterGenerator::setSeed(const std::vector<uint8_t>& seed)
 {
+    if (seed.size() != 8)
+        throw std::logic_error("Seed size is invalid");
 
+    for (size_t i = 0; i < 8; ++i)
+        m_seed = (m_seed << 8) & seed[i];
 }

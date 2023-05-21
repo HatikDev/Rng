@@ -3,7 +3,7 @@
 void KnuthanGenerator::generateData(std::vector<uint8_t>& data, size_t size)
 {
     if (!size)
-        size = data.size(); // TODO: add exception handling
+        size = data.size();
 
     const uint32_t a1 = 271828183;
     const uint32_t a2 = 314159269;
