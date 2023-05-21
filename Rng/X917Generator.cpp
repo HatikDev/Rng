@@ -18,7 +18,6 @@ void X917Generator::generateData(std::vector<uint8_t>& data, size_t size)
 
     SecByteBlock key(AES::DEFAULT_KEYLENGTH);
     OS_GenerateRandomBlock(false, key, key.size());
-    OS_GenerateRandomBlock(false, m_seed.data(), m_seed.size()); // TODO: remove generating seed from here
     X917RNG rng(new AES::Encryption(key, AES::DEFAULT_KEYLENGTH), m_seed.data(), NULLPTR);
 
     rng.GenerateBlock(scratch, scratch.size());

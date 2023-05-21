@@ -42,5 +42,5 @@ void KnuthanGenerator::generateData(std::vector<uint8_t>& data, size_t size)
 void KnuthanGenerator::setSeed(const std::vector<uint8_t>& seed)
 {
     m_seed = (seed[0] << 56) + (seed[1] << 48) + (seed[2] << 40) + (seed[3] << 32)
-             + (seed[4] << 24) + (seed[5] << 16) + (seed[6] << 8) + seed[7]; // TODO: fix this
+             + (seed[4] << 24) + (seed[5] << 16) + (seed[6] << 8) + seed[7];
 }

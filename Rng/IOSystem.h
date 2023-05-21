@@ -19,5 +19,5 @@ public:
     virtual void writeBinBatch(const std::vector<uint8_t>& data, bool rewrite = false) = 0;
 
     virtual void logSeed(const std::vector<uint8_t>& seed) = 0;
-    virtual void writeResult(std::map<std::string, size_t>& result, bool rewrite = false) = 0; // TODO: improve architechture
+    virtual void writeResult(std::map<std::string, size_t>& result, bool rewrite = false) = 0;
 };

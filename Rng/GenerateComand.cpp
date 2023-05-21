@@ -3,14 +3,19 @@
 #include "Generator.h"
 #include "FileIOSystem.h"
 #include "KnuthanGenerator.h"
+#include "MersenneTwisterGenerator.h"
+#include "LSFRGenerator.h"
 #include "LinearGenerator.h"
+#include "SystemGenerator.h"
+#include "X917Generator.h"
 
 #include <memory>
+#include <stdexcept>
 #include <unordered_map>
 
 namespace
 {
-std::unordered_map<std::string, SupportedGenerators> generators = {
+std::unordered_map<std::string, SupportedGenerators> generatorsFromNameToConst = {
     { "linear", SupportedGenerators::Linear },
     { "knuthan", SupportedGenerators::Knuthan },
     { "aes", SupportedGenerators::AESRNG },
@@ -20,7 +25,7 @@ std::unordered_map<std::string, SupportedGenerators> generators = {
     { "system", SupportedGenerators::SystemGenerator },
 };
 
-std::unordered_map<SupportedGenerators, std::string> generators123 = { // TODO: rename
+std::unordered_map<SupportedGenerators, std::string> generatorsFromConstToName = {
     { SupportedGenerators::Linear , "linear" },
     { SupportedGenerators::Knuthan, "knuthan" },
     { SupportedGenerators::AESRNG, "aes" },
@@ -32,32 +37,41 @@ std::unordered_map<SupportedGenerators, std::string> generators123 = { // TODO: 
 
 SupportedGenerators getGeneratorByString(const std::string& generatorName)
 {
-    if (generators.count(generatorName) == 0)
-        return SupportedGenerators::SystemGenerator; // TODO: replace by exception
+    if (generatorsFromNameToConst.count(generatorName) == 0)
+        throw std::logic_error("Invalid generator constant");
 
-    return generators[generatorName];
+    return generatorsFromNameToConst[generatorName];
 }
 
 std::string getGeneratorName(SupportedGenerators generator)
 {
-    if (generators123.count(generator) == 0)
-        return ""; // TODO: replace by exception
+    if (generatorsFromConstToName.count(generator) == 0)
+        throw std::logic_error("Invalid generator name");
 
-    return generators123[generator];
+    return generatorsFromConstToName[generator];
 }
 
 std::unique_ptr<Generator> getGeneratorObject(SupportedGenerators generator)
 {
-    switch (generator) // TODO: add all generators
+    switch (generator)
     {
     case SupportedGenerators::AESRNG:
         return std::make_unique<AESGenerator>();
     case SupportedGenerators::Knuthan:
-        return std::make_unique<KnuthanGenerator>();
+        return std::make_unique<KnuthanGenerator>(0);
     case SupportedGenerators::Linear:
         return std::make_unique<LinearGenerator>();
+    case SupportedGenerators::X917RNG:
+        return std::make_unique<X917Generator>();
+    case SupportedGenerators::LFSRSimple:
+        return std::make_unique<LSFRGenerator>(0);
+    case SupportedGenerators::MersenneTwister:
+        return std::make_unique<MersenneTwisterGenerator>(0);
+    case SupportedGenerators::SystemGenerator:
+        return std::make_unique<SystemGenerator>(0);
+    default:
+        throw std::logic_error("Invalid generator name");
     }
-    // TODO: throwing exception
 }
 }
 
@@ -75,6 +89,7 @@ void GenerateComand::execute()
             std::string outputFilename = prepareStringFromRegex(m_outputFiles[i % outputFileCount], k, m_generators[i]);
 
             generator = getGeneratorObject(m_generators[i]);
+            //generator->setSeed(); // TODO: we HAVE TO set seed
             generator->generateData(data);
 
             ioSystem = std::make_unique<FileIOSystem>(outputFilename);
@@ -123,7 +138,7 @@ std::string GenerateComand::prepareStringFromRegex(std::string regex, size_t iot
         while (index != std::string::npos)
         {
             index = regex.find('%', index);
-            if (regex[index + 1] == 'd') // TODO: maybe we can replace it by std::string.replace
+            if (regex[index + 1] == 'd')
             {
                 auto startPos = regex.begin() + index;
                 auto endPos = regex.begin() + index + 2;
@@ -135,7 +150,6 @@ std::string GenerateComand::prepareStringFromRegex(std::string regex, size_t iot
                 auto endPos = regex.begin() + index + 2;
                 regex.replace(startPos, endPos, getGeneratorName(generator));
             }
-            //++index;
         }
     }
     return regex;

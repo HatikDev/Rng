@@ -5,7 +5,7 @@
 class LSFRGenerator : public Generator
 {
 public:
-    LSFRGenerator(uint64_t seed = 1234567901234567890) : Generator(), m_seed{ seed } {} // TODO: remove default value
+    LSFRGenerator(uint64_t seed) : Generator(), m_seed{ seed } {}
     virtual ~LSFRGenerator() {}
 
     virtual void generateData(std::vector<uint8_t>& data, size_t size = 0) override;

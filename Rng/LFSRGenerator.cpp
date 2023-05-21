@@ -5,7 +5,7 @@
 void LSFRGenerator::generateData(std::vector<uint8_t>& data, size_t size)
 {
     if (!size)
-        size = data.size(); // TODO: add throwing exception
+        size = data.size();
 
     uint32_t shiftRegister = static_cast<uint32_t>(m_seed & 0xFFFFFFFF);
 

@@ -68,7 +68,7 @@ void launchAnalysisTestAllSetsAuto1(const std::string& inputFileName, const std:
 std::vector<std::string> getParams(size_t argc, char* argv[], size_t startIndex)
 {
     if (argc - startIndex <= 0)
-        return {}; // TODO: make exception
+        throw std::logic_error("Invalid comand params");
 
     std::vector<std::string> params;
     params.reserve(argc - startIndex);
@@ -86,7 +86,7 @@ void launchComand(int argc, char* argv[])
     else if (std::string(argv[1]) == "test")
         comand = std::make_unique<TestComand>(getParams(argc, argv, 2));
     else
-        ; // TODO: add exception
+        throw std::logic_error("Invalid comand");
 
     comand->execute();
 }
