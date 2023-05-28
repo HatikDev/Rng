@@ -92,7 +92,7 @@ void GenerateComand::execute()
             //generator->setSeed(); // TODO: we HAVE TO set seed
             generator->generateData(data);
 
-            ioSystem = std::make_unique<FileIOSystem>(outputFilename);
+            ioSystem = std::make_unique<FileIOSystem>("", outputFilename, "seed_" + outputFilename);
             ioSystem->writeBinBatch(data, true);
         }
     }
